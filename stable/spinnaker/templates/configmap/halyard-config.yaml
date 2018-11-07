@@ -103,7 +103,17 @@ data:
     else
       PROVIDER_COMMAND='add'
     fi
-
+    {{ if .Values.slack.enabled }}
+    $HAL_COMMAND config notification slack enable
+    $HAL_COMMAND config notification slack edit  --bot-name {{ .Values.slack.botName }} \
+      {{- if .Values.slack.botName }}
+      --bot-name {{ .Values.slack.token }} \
+      {{- end }}
+      --token "{{ .Values.slack.accessKey }}" \
+      {{- end }}
+      --storage-account-key "{{ .Values.azs.accessKey }}"
+    $HAL_COMMAND config storage edit --type azs
+    {{ end }}
     $HAL_COMMAND config provider kubernetes account $PROVIDER_COMMAND {{ $context }} --docker-registries dockerhub \
                 --context {{ $context }} {{ if not $.Values.kubeConfig.enabled }}--service-account true{{ end }} \
                 {{ if $.Values.kubeConfig.enabled }}--kubeconfig-file /opt/kube/{{ $.Values.kubeConfig.secretKey }}{{ end }} --omit-namespaces=kube-system,kube-public --provider-version v2
